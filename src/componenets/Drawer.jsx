@@ -107,7 +107,7 @@ export default function PersistentDrawerLeft({screen}) {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Persistent drawer
+            Institute Management System
           </Typography>
         </Toolbar>
       </AppBar>

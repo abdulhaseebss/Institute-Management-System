@@ -12,6 +12,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Loader from '../../componenets/Loader';
+import { CircularProgress } from '@mui/material';
+import { loginUser, signUpUser } from '../../config/firebase/FirebaseMethods';
+import { useNavigate } from 'react-router-dom';
 
 function Copyright(props) {
   return (
@@ -31,13 +35,43 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+  const navigate = useNavigate()
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    if (data.get('email') === "") {
+      alert('Enter Email Address')
+      return
+    }else if(data.get('password') === ""){
+      alert('Enter Password')
+      return
+    }
     console.log({
       email: data.get('email'),
       password: data.get('password'),
     });
+    // signUpUser({
+    //   email: data.get('email'),
+    //   password: data.get('password'),
+    //   type: 'student'
+    // }).then((res)=>{
+    //   console.log(res);
+    // }).catch((err)=>{
+    //   console.log(err);
+    // })
+    loginUser({
+      email: data.get('email'),
+      password: data.get('password'),
+    }).then((res)=>{
+      console.log(res.type);
+      if (res.type === 'admin') {
+        navigate('/admin')
+      }else{
+        navigate('/student')
+      }
+    }).catch((err)=>{
+      console.log(err);
+    })
   };
 
   return (
@@ -52,7 +86,7 @@ export default function SignIn() {
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} >
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
