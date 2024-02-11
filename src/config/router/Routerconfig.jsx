@@ -10,8 +10,8 @@ const Routerconfig = () => {
   return (
     <BrowserRouter>
         <Routes>
-            <Route path='*' element={<Login/>}/>
-            <Route path='signup' element={<SignupForm/>}/>
+            <Route path='login' element={<Login/>}/>
+            <Route path='*' element={<SignupForm/>}/>
             <Route path='admission' element={<Admission/>}/>
             <Route path='admin/*' element={<AdminDashboard/>}/>
             <Route path='student' element={<Student/>}/>

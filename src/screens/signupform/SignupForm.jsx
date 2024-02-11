@@ -20,38 +20,94 @@ import FormControl from "@mui/material/FormControl";
 import { useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
 import { useState } from "react";
-import { getAllData, sendData } from "../../config/firebase/FirebaseMethods";
+import { addImageToStorage, getAllData, sendData, signUpUser } from "../../config/firebase/FirebaseMethods";
 import { styled } from '@mui/material/styles';
+import { useForm } from "react-hook-form"
+import { yupResolver } from "@hookform/resolvers/yup"
+import * as yup from "yup"
+
+
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const defaultTheme = createTheme();
 
+const schema = yup.object({
+  email: yup.string().required(),
+  password: yup.string().required(),
+})
+  .required()
+
 export default function SignUp() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-  };
 
-  const [age, setAge] = React.useState("");
-  const [open, setOpen] = React.useState(false);
+  // const inputRef = useRef()
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        resolver: yupResolver(schema),
+    })
 
-  const handleChange = (event) => {
-    setAge(event.target.value);
-  };
+    const getValues = (values) => {
+      if (values.address === "") {
+        alert('Please Enter Address')
+      }else if (values.course === "") {
+        alert('Please Select Course')
+      }else if (values.gender === '') {
+        alert('Please Select Gender')
+      }else{
+        // console.log(values);
+        const files = values.file[0]
+        addImageToStorage(files, values.email).then((res)=>{
+          console.log(res);
+          values.url = res
+          values.type = 'student'
+          console.log(values);
+          // signUpUser({
+          //   firsName:values.firsName,
+          //   lastName:values.lastName,
+          //   email: values.email,
+          //   gender: values.gender,
+          //   password: values.password,
+          //   type: values.type,
+          //   photoUrl: values.url,
+          //   address: values.address,
+          //   course: values.course,
+          // }).then((response)=>{
+          //   console.log(response);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const [modaltext, setmodaltext] = useState("");
-  const [age2, setAge2] = React.useState("");
-  const handleChange2 = (event) => {
-    setAge2(event.target.value);
-  };
-  const [dataArr, setdataArr] = React.useState([]);
-  const matches = useMediaQuery("(max-width:730px)");
+          // }).catch((error)=>{
+          //   console.log(error);
+          // })
+          signUpUser(values).then((response)=>{
+            console.log(response);
+
+          }).catch((error)=>{
+            console.log(error);
+          })
+
+        }).catch((err)=>{
+          console.log(err);
+        })
+      }
+    }
+
+  
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
+  //   const data = new FormData(event.currentTarget);
+  //   const formObj = {
+  //     firstName: data.get("firstName"),
+  //     lastName: data.get("lastName"),
+  //     email: data.get("email"),
+  //     password: data.get("password"),
+  //     // course: data.get("age"),
+  //     // selectGender: data.get("Select Gender"),
+  //   }
+  //   console.log(formObj);
+  // };
+
+
+
+ 
+const [dataArr, setdataArr] = React.useState([]);
+const matches = useMediaQuery("(max-width:730px)");
 
   const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -65,12 +121,8 @@ export default function SignUp() {
     width: 1,
   });
 
-  const courses = [
-    "Web Developement",
-    "Ai ChatBot",
-    "Graphic Design",
-    "Flutter Developement",
-  ];
+
+  
 
   useEffect(() => {
     //   sendData({courses} , "courses").then((res)=>{
@@ -83,10 +135,10 @@ export default function SignUp() {
 
     getAllData("courses")
       .then((res) => {
-        console.log(res[0].courses);
+        // console.log(res[0].courses);
         dataArr.push(res[0].courses);
         setdataArr(...dataArr);
-        console.log(dataArr);
+        // console.log(dataArr);
         dataArr.map((item) => {
           return console.log(item);
         });
@@ -117,7 +169,7 @@ export default function SignUp() {
           <Box
             component="form"
             noValidate
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(getValues)}
             sx={{ mt: 3 }}
           >
             <Grid container spacing={2}>
@@ -129,6 +181,7 @@ export default function SignUp() {
                   fullWidth
                   id="firstName"
                   label="First Name"
+                  {...register('firstName', { required: true })}
                   autoFocus
                 />
               </Grid>
@@ -140,6 +193,7 @@ export default function SignUp() {
                   label="Last Name"
                   name="lastName"
                   autoComplete="family-name"
+                  {...register('lastName', { required: true })}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -150,6 +204,7 @@ export default function SignUp() {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  {...register('email', { required: true })}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -161,6 +216,7 @@ export default function SignUp() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  {...register('password', { required: true })}
                 />
               </Grid>
               <div
@@ -179,9 +235,9 @@ export default function SignUp() {
                     required
                     labelId="Course"
                     id="Course"
-                    value={age}
                     label="Course"
-                    onChange={handleChange}
+                    // onChange={handleChange}
+                    {...register('course', { required: true })}
                   >
                     {dataArr.map((element, index) => {
                       return (
@@ -198,9 +254,8 @@ export default function SignUp() {
                     required
                     labelId="Select Gender"
                     id="Select Gender"
-                    value={age2}
                     label="Select Gender"
-                    onChange={handleChange2}
+                    {...register('gender', { required: true })}
                   >
                     <MenuItem value={"male"}>Male</MenuItem>
                     <MenuItem value={"female"}>Female</MenuItem>
@@ -216,6 +271,7 @@ export default function SignUp() {
                   type="address"
                   id="address"
                   autoComplete="address"
+                  {...register('address', { required: true })}
                 />
               </Grid>
               <Button
@@ -225,7 +281,7 @@ export default function SignUp() {
                 style={{marginTop:"15px" , marginLeft:'15px'}}
               >
                 Upload file
-                <VisuallyHiddenInput type="file" />
+                <VisuallyHiddenInput type="file" {...register('file', { required: true })}/>
               </Button>
               <Grid item xs={12}>
                 <FormControlLabel
@@ -246,7 +302,7 @@ export default function SignUp() {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="*" variant="body2">
+                <Link href="login" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>

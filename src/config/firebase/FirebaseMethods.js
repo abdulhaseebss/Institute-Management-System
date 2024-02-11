@@ -4,7 +4,7 @@ import {
     signInWithEmailAndPassword,
     signOut,
   } from "firebase/auth";
-  import app from "./FirebaseConfig.js";
+  import app, { storage } from "./FirebaseConfig.js";
   import {
     getFirestore,
     collection,
@@ -16,6 +16,7 @@ import {
     doc,
     updateDoc,
   } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
   
   const auth = getAuth(app);
   
@@ -29,12 +30,7 @@ import {
       createUserWithEmailAndPassword(auth, obj.email, obj.password)
         .then(async (res) => {
           resolve((obj.uid = res.user.uid));
-          const dbObj = {
-            email: obj.email,
-            uid: res.user.uid,
-            type: obj.type
-          }
-          await addDoc(collection(db, "users"), dbObj)
+          await addDoc(collection(db, "users"), obj)
             .then((res) => {
               console.log("user added to database successfully");
             })
@@ -143,6 +139,20 @@ import {
       reject("error occured")
     })
   }
+
+    // const files = profile.files[0]
+    const addImageToStorage = (files , email)=>{
+      return new Promise((resolve , reject)=>{
+        const storageRef = ref(storage, email);
+        uploadBytes(storageRef, files).then(() => {
+            getDownloadURL(storageRef).then((url) => {
+                // console.log(url);
+                resolve(url);
+                reject('Error found');
+            });
+        });
+      })
+    }
   
   
-  export { auth, db, signUpUser, loginUser, signOutUser, sendData, getData, getAllData, deleteDocument, updateDocument };
+  export { auth, db, signUpUser, loginUser, signOutUser, sendData, getData, getAllData, deleteDocument, updateDocument, addImageToStorage };
